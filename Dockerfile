@@ -6,7 +6,7 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y curl
+RUN apt-get update && apt-get install -y curl gnupg
 
 # Install Node.js and npm
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
@@ -22,10 +22,6 @@ RUN uv pip install -r requirements.txt --system
 
 # Copy the rest of the app early
 COPY . .
-
-WORKDIR /app/tailwind
-RUN npm install && npm install -D tailwindcss
-RUN npm run build:tailwind
 
 # Make a file executable
 WORKDIR /app
