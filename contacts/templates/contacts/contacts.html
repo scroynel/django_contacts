@@ -3,7 +3,73 @@
 {% block title %}Contacts{% endblock %}
 
 {% block content %}
-<h1 class="text-7xl text-amber-700">Contacts</h1>
-<p class="text-6xl">Phone number: 32423423432</p>
-<p class="text-7xl text-blue-500">new contact</p>
+
+<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-3 sm:space-y-0">
+  <!-- Search -->
+  <form method="get" class="flex w-full sm:w-1/2">
+    <input type="text" name="q" value="{{ query }}" placeholder="Search contacts..."
+           class="w-full border border-gray-300 rounded-l-lg px-4 py-2 focus:ring-blue-500 focus:border-blue-500">
+    <button type="submit" class="bg-gray-600 hover:bg-blue-700 text-white px-4 rounded-r-lg">
+      🔍
+    </button>
+  </form>
+
+  <!-- Sorting -->
+  <div class="flex items-center space-x-2">
+    <label for="sort" class="text-gray-700 font-semibold">Sort by:</label>
+    <form method="get" class="flex">
+      <input type="hidden" name="q" value="{{ query }}">
+      <select name="sort" onchange="this.form.submit()"
+              class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
+        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name</option>
+        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Surname</option>
+        <option value="city" {% if sort_by == 'city' %}selected{% endif %}>City</option>
+        <option value="status" {% if sort_by == 'status' %}selected{% endif %}>Status</option>
+      </select>
+    </form>
+  </div>
+</div>
+
+<div class="mx-auto space-y-6">
+  <!-- Header -->
+  <div class="flex bg-gray-100 font-semibold p-4 rounded-2xl">
+    <div class="flex-1 min-w-0">Name</div>
+    <div class="flex-1 min-w-0 truncate">Surname</div>
+    <div class="flex-1 min-w-0">Email</div>
+    <div class="flex-1 min-w-0">City</div>
+    <div class="flex-1 min-w-0">Status</div>
+    <div class="flex-1 min-w-0">Date</div>
+    <div class="w-24">Actions</div>
+  </div>
+
+  {% for contact in contacts %}
+  <div class="bg-gray-200 flex p-4 items-center rounded-2xl shadow-2xl transform transition duration-500 hover:-translate-y-2 ">
+    <div class="flex-1 min-w-0 truncate">{{ contact.name }}</div>
+    <div class="flex-1 min-w-0 truncate">{{ contact.surname }}</div>
+    <div class="flex-1 min-w-0 truncate">{{ contact.email }}</div>
+    <div class="flex-1 min-w-0 truncate">{{ contact.city.name }}</div>
+    <div class="flex-1 min-w-0 truncate
+      {% if contact.status.code == 'new' %}text-green-500
+      {% elif contact.status.code == 'in_progress' %}text-yellow-500
+      {% elif contact.status.code == 'lost' %}text-red-500
+      {% elif contact.status.code == 'outdated' %}text-gray-500{% endif %}">
+      {{ contact.status.name }}
+    </div>
+    <div class="flex-1 min-w-0 truncate">{{ contact.time_created|date:'d.m.Y' }}</div>
+    <div class="w-24 flex gap-1">
+      <a href="#" class="text-blue-500 hover:text-blue-700 transform hover:scale-110 transition">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 11l6 6L4 20l-1-7 6-6z"/>
+        </svg>
+      </a>
+      <a href="#" class="text-red-500 hover:text-red-700 transform hover:scale-110 transition">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
 {% endblock %}
