@@ -1,0 +1,10 @@
+{% block title %}Updating contact{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    {{form.as_p}}
+    <button type="submit">Update</button>
+    <a href="{% url 'contacts' %}">Cancel</a>
+</form>
+{% endblock %}

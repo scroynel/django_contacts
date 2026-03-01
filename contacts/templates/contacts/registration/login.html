@@ -1,0 +1,11 @@
+{% block title %}Creating contact{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ success_url }}">
+    {{form.as_p}}
+    <button type="submit">Login</button>
+    <a href="{% url 'contacts' %}">Cancel</a>
+</form>
+{% endblock %}

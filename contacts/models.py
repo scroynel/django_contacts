@@ -1,6 +1,6 @@
 from django.db import models
+from django.urls import reverse
 from phonenumber_field.modelfields import PhoneNumberField
-from cities_light.models import City, Country
 
 
 class Contact(models.Model):
@@ -8,8 +8,7 @@ class Contact(models.Model):
     surname = models.CharField(max_length=50)
     phone = PhoneNumberField(unique=True)
     email = models.EmailField(unique=True)
-    country = models.ForeignKey(Country, on_delete=models.PROTECT)
-    city = models.ForeignKey(City, on_delete=models.PROTECT)
+    city = models.CharField(max_length=50)
     status = models.ForeignKey('ContactStatusChoices', on_delete=models.PROTECT, related_name='contacts')
     time_created = models.DateTimeField(auto_now_add=True)
     time_updated = models.DateTimeField(auto_now=True)

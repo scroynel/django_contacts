@@ -4,14 +4,27 @@
 
 {% block content %}
 
-<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-3 sm:space-y-0">
+<div class="flex justify-end">
+  {% if user.is_authenticated %}
+  <div class="flex gap-5 items-center">
+    <p>Welcome, <span class="underline">{{user.username}}</span></p>
+    <!-- Logout form -->  
+    <form action="{% url 'logout' %}" method="post">
+      {% csrf_token %}
+      <button type="submit" class="border px-2 rounded-2xl cursor-pointer transition duration-500 hover:bg-red-300">Logout</button>
+    </form>
+  </div>
+  {% else %}
+  <a href="{% url 'login' %}">Login</a>
+  {% endif %}
+</div>
+
+<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
   <!-- Search -->
   <form method="get" class="flex w-full sm:w-1/2">
     <input type="text" name="q" value="{{ query }}" placeholder="Search contacts..."
            class="w-full border border-gray-300 rounded-l-lg px-4 py-2 focus:ring-blue-500 focus:border-blue-500">
-    <button type="submit" class="bg-gray-600 hover:bg-blue-700 text-white px-4 rounded-r-lg">
-      🔍
-    </button>
+    <button type="submit" class="bg-gray-600 hover:bg-blue-700 text-white px-4 rounded-r-lg">🔍</button>
   </form>
 
   <!-- Sorting -->
@@ -28,6 +41,13 @@
       </select>
     </form>
   </div>
+</div>
+
+<div class="flex justify-between items-center">
+  <h1 class="text-4xl my-7">List of contacts</h1>
+  <a href="{% url 'create_contact' %}">
+    <svg class="w-10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M352 128C352 110.3 337.7 96 320 96C302.3 96 288 110.3 288 128L288 288L128 288C110.3 288 96 302.3 96 320C96 337.7 110.3 352 128 352L288 352L288 512C288 529.7 302.3 544 320 544C337.7 544 352 529.7 352 512L352 352L512 352C529.7 352 544 337.7 544 320C544 302.3 529.7 288 512 288L352 288L352 128z"/></svg>
+  </a>
 </div>
 
 <div class="mx-auto space-y-6">
@@ -47,7 +67,7 @@
     <div class="flex-1 min-w-0 truncate">{{ contact.name }}</div>
     <div class="flex-1 min-w-0 truncate">{{ contact.surname }}</div>
     <div class="flex-1 min-w-0 truncate">{{ contact.email }}</div>
-    <div class="flex-1 min-w-0 truncate">{{ contact.city.name }}</div>
+    <div class="flex-1 min-w-0 truncate">{{ contact.city }}</div>
     <div class="flex-1 min-w-0 truncate
       {% if contact.status.code == 'new' %}text-green-500
       {% elif contact.status.code == 'in_progress' %}text-yellow-500
@@ -56,13 +76,13 @@
       {{ contact.status.name }}
     </div>
     <div class="flex-1 min-w-0 truncate">{{ contact.time_created|date:'d.m.Y' }}</div>
-    <div class="w-24 flex gap-1">
-      <a href="#" class="text-blue-500 hover:text-blue-700 transform hover:scale-110 transition">
+    <div class="w-24 flex gap-2">
+      <a href="{% url 'update_contact' contact.id %}" class="text-blue-500 hover:text-blue-700 transform hover:scale-110 transition">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 11l6 6L4 20l-1-7 6-6z"/>
         </svg>
       </a>
-      <a href="#" class="text-red-500 hover:text-red-700 transform hover:scale-110 transition">
+      <a href="{% url 'delete_contact' contact.id %}" class="text-red-500 hover:text-red-700 transform hover:scale-110 transition">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>

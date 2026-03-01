@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 
+from django.urls import reverse_lazy
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -42,9 +44,7 @@ INSTALLED_APPS = [
     'theme',
     'django_browser_reload',
     'phonenumber_field',
-    'cities_light',
-    'dal',
-    'dal_select2',
+    # 'django_filter',
     'contacts',
 ]
 
@@ -159,5 +159,5 @@ CACHES = {
 
 TAILWIND_APP_NAME = "theme"
 
-CITIES_LIGHT_INCLUDE_COUNTRIES = ['PL', 'DE']  # only Poland
-CITIES_LIGHT_TRANSLATION_LANGUAGES = ['pl']
+LOGIN_REDIRECT_URL = 'contacts'
+LOGOUT_REDIRECT_URL = 'contacts'
