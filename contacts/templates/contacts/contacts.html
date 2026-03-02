@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load ordering_tags %}
 
 {% block title %}Contacts{% endblock %}
 
@@ -30,16 +31,20 @@
   <!-- Sorting -->
   <div class="flex items-center space-x-2">
     <label for="sort" class="text-gray-700 font-semibold">Sort by:</label>
+    
+
+
+  
     <form method="get" class="flex">
-      <input type="hidden" name="q" value="{{ query }}">
-      <select name="sort" onchange="this.form.submit()"
-              class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
-        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name</option>
-        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Surname</option>
-        <option value="city" {% if sort_by == 'city' %}selected{% endif %}>City</option>
-        <option value="status" {% if sort_by == 'status' %}selected{% endif %}>Status</option>
+       <!-- <input type="hidden" name="q" value="{{ query }}" -->
+      <select name="ordering" onchange="this.form.submit()" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
+        {% for value, label in filter.form.fields.ordering.choices %}
+        <option value="{{value}}" {% if request.GET.ordering == value %}selected{% endif %}>{{label}}</option>
+        {% endfor %}
       </select>
     </form>
+
+    
   </div>
 </div>
 
@@ -53,12 +58,12 @@
 <div class="mx-auto space-y-6">
   <!-- Header -->
   <div class="flex bg-gray-100 font-semibold p-4 rounded-2xl">
-    <div class="flex-1 min-w-0">Name</div>
-    <div class="flex-1 min-w-0 truncate">Surname</div>
+    <div class="flex-1 min-w-0">{% ordering_link 'name' 'Name' %}</div>
+    <div class="flex-1 min-w-0 truncate">{% ordering_link 'surname' 'Surname' %}</div>
     <div class="flex-1 min-w-0">Email</div>
     <div class="flex-1 min-w-0">City</div>
     <div class="flex-1 min-w-0">Status</div>
-    <div class="flex-1 min-w-0">Date</div>
+    <div class="flex-1 min-w-0">{% ordering_link 'time_created' 'Date' %}</div>
     <div class="w-24">Actions</div>
   </div>
 

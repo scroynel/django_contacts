@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'theme',
     'django_browser_reload',
     'phonenumber_field',
-    # 'django_filter',
+    'django_filters',
     'contacts',
 ]
 
