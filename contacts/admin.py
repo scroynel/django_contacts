@@ -4,8 +4,9 @@ from .forms import ContactForm
 
 
 # admin.site.register(Contact)
-admin.site.register(ContactStatusChoices)
-
+@admin.register(ContactStatusChoices)
+class ContactStatusChoicesAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'code']
 
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
