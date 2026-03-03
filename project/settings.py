@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'theme',
     'django_browser_reload',
     'phonenumber_field',
+    'rest_framework',
     'django_filters',
     'contacts',
 ]
@@ -161,3 +162,5 @@ TAILWIND_APP_NAME = "theme"
 
 LOGIN_REDIRECT_URL = 'contacts'
 LOGOUT_REDIRECT_URL = 'contacts'
+
+TIME_ZONE = 'Europe/Warsaw'
