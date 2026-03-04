@@ -4,7 +4,7 @@ from .serializers import ContactAllSerializer, ContactPartSerializer
 
 
 class ContactsViewSet(viewsets.ModelViewSet):
-    queryset = Contact.objects.all().order_by('-time_created')
+    queryset = Contact.objects.select_related('status').all().order_by('-time_created')
 
 
     def get_serializer_class(self):

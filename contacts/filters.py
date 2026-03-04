@@ -28,5 +28,5 @@ class ContactFilter(django_filters.FilterSet):
         For example: search in name or surname.
         """
         return queryset.filter(
-            Q(name__icontains=value) | Q(surname__icontains=value) | Q(city__icontains=value) | Q(status__name__icontains=value)
+            Q(name__icontains=value) | Q(surname__icontains=value) | Q(city__icontains=value)
         )

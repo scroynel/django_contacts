@@ -1,7 +1,7 @@
 from django.urls import reverse_lazy
-from django.db import transaction, IntegrityError
+from django.db import transaction
 from django.shortcuts import render, redirect
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
+from django.views.generic import CreateView, UpdateView, DeleteView
 from django.contrib.auth.views import LoginView
 from django_filters.views import FilterView
 from .models import Contact, ContactStatusChoices
@@ -9,6 +9,8 @@ from .forms import ContactForm, ContactCSVForm
 from .filters import ContactFilter
 import io
 import csv
+import os
+import requests
 
 
 class MyLoginView(LoginView):
@@ -23,12 +25,49 @@ class ContactListView(FilterView):
 
 
     def get_queryset(self):
-        return Contact.objects.all()
+        return Contact.objects.select_related('status').all()
 
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['upload_form'] = ContactCSVForm()
+
+        weather_data = {}
+
+        # Get cities of contacts without dublicates
+        contacts = set([item['city'] for item in self.get_queryset().values('city')])
+
+        headers = {'User-Agent': 'MyGeocodingApp/1.0'}
+
+        # for city in contacts:
+        #     geo_api_key = f'https://nominatim.openstreetmap.org/search?q={city}&format=json&limit=1'
+
+        #     response_geo = requests.get(geo_api_key, headers=headers)
+        #     if response_geo.status_code == 200:
+
+        #         lat = response_geo.json()[0]['lat']
+        #         lon = response_geo.json()[0]['lon']
+            
+        #         weather_api_key = f'https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true'
+        #         response_weather = requests.get(weather_api_key, headers=headers)
+            
+        #         if response_weather.status_code == 200:
+        #             data = response_weather.json()   
+        #             units = data['current_weather_units']
+        #             values = data['current_weather']
+        #             weather = {key: f'{val} {units[key]}' for key, val in values.items()}
+                    
+        #             weather_data[city] = {
+        #                 'temperature': weather['temperature'],
+        #                 'windspeed': weather['windspeed']
+        #             }
+        #             print(weather_data)
+        #         else:
+        #             print('Bad', response_weather.status_code)
+        #     else:
+        #             print('Bad', response_geo.status_code)
+        # context['weather'] = weather_data
+
         return context
     
 
@@ -39,7 +78,6 @@ class ContactListView(FilterView):
             uploaded_file = request.FILES['file']
 
             status_map = {s.name.lower(): s for s in ContactStatusChoices.objects.all()}
-            print(status_map)
 
             # Get existing phone numbers to avoid duplicates
             existing_phones = set(Contact.objects.values_list('phone', flat=True))

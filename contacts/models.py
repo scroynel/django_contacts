@@ -1,22 +1,15 @@
 from django.db import models
-from django.urls import reverse
 from phonenumber_field.modelfields import PhoneNumberField
 
 
 class Contact(models.Model):
-    name = models.CharField(max_length=50)
-    surname = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, db_index=True)
+    surname = models.CharField(max_length=50, db_index=True)
     phone = PhoneNumberField(unique=True)
     email = models.EmailField(unique=True)
-    city = models.CharField(max_length=50)
+    city = models.CharField(max_length=50, db_index=True)
     status = models.ForeignKey('ContactStatusChoices', on_delete=models.PROTECT, related_name='contacts')
-    time_created = models.DateTimeField(auto_now_add=True)
-    time_updated = models.DateTimeField(auto_now=True)
-
-
-    def __str__(self):
-        return f'{self.name} {self.surname}'
-
+    time_created = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
         verbose_name = 'Contact'
@@ -24,7 +17,7 @@ class Contact(models.Model):
 
 
 class ContactStatusChoices(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, db_index=True)
     code = models.CharField(max_length=30, unique=True)
 
 

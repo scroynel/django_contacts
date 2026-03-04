@@ -26,7 +26,13 @@ urlpatterns = [
     path("api-auth/", include("rest_framework.urls")),
     path("__reload__/", include("django_browser_reload.urls")),
     path('', include('contacts.urls'))
-]
+] 
 
 urlpatterns += static(settings.STATIC_URL, documents_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, documents_root=settings.MEDIA_ROOT)
+
+
+if settings.DEBUG:
+    urlpatterns += [
+        path("__debug__/", include("debug_toolbar.urls")),
+    ]

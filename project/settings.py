@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'debug_toolbar',
     'tailwind',
     'theme',
     'django_browser_reload',
@@ -58,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_browser_reload.middleware.BrowserReloadMiddleware', # tailwind browser reloader when we change some style
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -164,3 +166,9 @@ LOGIN_REDIRECT_URL = 'contacts'
 LOGOUT_REDIRECT_URL = 'contacts'
 
 TIME_ZONE = 'Europe/Warsaw'
+
+INTERNAL_IPS = ['localhost', '127.0.0.1']
+
+DEBUG_TOOLBAR_CONFIG = {
+    'SHOW_TOOLBAR_CALLBACK': lambda request: DEBUG,
+}

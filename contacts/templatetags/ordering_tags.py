@@ -29,6 +29,5 @@ def ordering_link(context, field, label):
 
     params['ordering'] = direction
     url = '?' + urlencode(params)
-    print(urlencode(params))
 
     return mark_safe(f'<a href="{url}">{label} {arrow}</a>')
