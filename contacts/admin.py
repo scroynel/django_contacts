@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import Contact, ContactStatusChoices
+from .models import Contact, ContactStatusChoices, GeoCache
 from .forms import ContactForm
 
 
-# admin.site.register(Contact)
+
 @admin.register(ContactStatusChoices)
 class ContactStatusChoicesAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'code']
@@ -11,3 +11,5 @@ class ContactStatusChoicesAdmin(admin.ModelAdmin):
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
     form = ContactForm
+    
+admin.site.register(GeoCache)

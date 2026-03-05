@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load ordering_tags %}
+{% load tags %}
 
 {% block title %}Contacts{% endblock %}
 
@@ -12,11 +12,11 @@
     <!-- Logout form -->  
     <form action="{% url 'logout' %}" method="post">
       {% csrf_token %}
-      <button type="submit" class="border px-2 rounded-2xl cursor-pointer transition duration-500 hover:bg-red-300">Logout</button>
+      <button type="submit" class="px-4 py-2 bg-gray-800 hover:bg-black text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all">Logout</button>
     </form>
   </div>
   {% else %}
-  <a href="{% url 'login' %}">Login</a>
+  <a class="px-4 py-2 bg-gray-800 hover:bg-black text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all" href="{% url 'login' %}">Login</a>
   {% endif %}
 </div>
 
@@ -62,7 +62,7 @@
     </div>
 </div>
 
-<div class="mx-auto space-y-6">
+<div id="contacts" class="mx-auto space-y-6">
   <!-- Header -->
   <div class="flex bg-gray-100 font-semibold p-4 rounded-2xl">
     <div class="flex-1 min-w-0">{% ordering_link 'name' 'Name' %}</div>
@@ -75,11 +75,22 @@
   </div>
 
   {% for contact in contacts %}
-  <div class="bg-gray-200 flex p-4 items-center rounded-2xl shadow-2xl transform transition duration-500 hover:-translate-y-2 ">
+  <div class="contact-item bg-gray-200 flex p-4 items-center rounded-2xl shadow-2xl transform transition-all duration-500 hover:-translate-y-2 ">
     <div class="flex-1 min-w-0 truncate">{{ contact.name }}</div>
     <div class="flex-1 min-w-0 truncate">{{ contact.surname }}</div>
     <div class="flex-1 min-w-0 truncate">{{ contact.email }}</div>
-    <div class="flex-1 min-w-0 truncate">{{ contact.city }}</div>
+    <div class="flex-1 min-w-0 truncate">{{ contact.city }}
+      {% with info=weather_cities|get_item:contact.city %}
+            {% if info %}
+                <div>
+                    🌡️: {{ info.temp }}<br>
+                    💨: {{ info.wind }}
+                </div>
+            {% else %}
+                <p>Погода недоступна</p>
+            {% endif %}
+        {% endwith %}
+    </div>
     <div class="flex-1 min-w-0 truncate
       {% if contact.status.code == 'new' %}text-green-500
       {% elif contact.status.code == 'in_progress' %}text-yellow-500
@@ -94,7 +105,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 11l6 6L4 20l-1-7 6-6z"/>
         </svg>
       </a>
-      <a href="{% url 'delete_contact' contact.id %}" class="text-red-500 hover:text-red-700 transform hover:scale-110 transition">
+      <a href="{% url 'delete_contact' contact.id %}" class="delete-link text-red-500 hover:text-red-700 transform hover:scale-110 transition">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>

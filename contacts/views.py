@@ -1,16 +1,21 @@
 from django.urls import reverse_lazy
 from django.db import transaction
-from django.shortcuts import render, redirect
-from django.views.generic import CreateView, UpdateView, DeleteView
+from django.template.loader import render_to_string
+from django.http import JsonResponse, HttpResponseBadRequest
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.generic.detail import SingleObjectMixin
+from django.views.generic import CreateView, UpdateView, DeleteView, View
 from django.contrib.auth.views import LoginView
 from django_filters.views import FilterView
-from .models import Contact, ContactStatusChoices
+from .models import Contact, ContactStatusChoices, GeoCache
 from .forms import ContactForm, ContactCSVForm
 from .filters import ContactFilter
 import io
 import csv
 import os
 import requests
+import threading
+from .utils import fetch_coords_background
 
 
 class MyLoginView(LoginView):
@@ -32,41 +37,79 @@ class ContactListView(FilterView):
         context = super().get_context_data(**kwargs)
         context['upload_form'] = ContactCSVForm()
 
-        weather_data = {}
-
         # Get cities of contacts without dublicates
-        contacts = set([item['city'] for item in self.get_queryset().values('city')])
+        coords = GeoCache.objects.values_list('city_name', 'lat', 'lon')
 
+        cities = [c[0] for c in coords]
+        lats = [c[1] for c in coords]
+        lons = [c[2] for c in coords]
+
+        lats_string = ','.join(map(str, lats))
+        lons_string = ','.join(map(str, lons))
+        
         headers = {'User-Agent': 'MyGeocodingApp/1.0'}
-
-        # for city in contacts:
-        #     geo_api_key = f'https://nominatim.openstreetmap.org/search?q={city}&format=json&limit=1'
-
-        #     response_geo = requests.get(geo_api_key, headers=headers)
-        #     if response_geo.status_code == 200:
-
-        #         lat = response_geo.json()[0]['lat']
-        #         lon = response_geo.json()[0]['lon']
             
-        #         weather_api_key = f'https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true'
-        #         response_weather = requests.get(weather_api_key, headers=headers)
+        weather_api_key = f'https://api.open-meteo.com/v1/forecast?latitude={lats_string}&longitude={lons_string}&current_weather=true'
+        response_weather = requests.get(weather_api_key, headers=headers)
+        data = response_weather.json()
+        print(data)
+
+        weather = []
+
+        for item in data:
+            units = item['current_weather_units']
+            values = item['current_weather']
+            weather.append({key: f'{val} {units[key]}' for key, val in values.items()})
+        
+        print(weather)
+        
+        weather_cities = {
+                city:{
+                'temp': item['temperature'],
+                'wind': item['windspeed']
+            }
+            for city, item in zip(cities, weather)
+        }
+
+        print(weather_cities)
+
+        context['weather_cities'] = weather_cities
+        # results = data['current_weather']
+        # print(results)
+
+
+        # if isinstance(results, dict):
+        #     results = [results]
+
+        # weather = {
+        #     city:{
+        #         'temp': item['temperature'],
+        #         'wind': item['windspeed']
+        #     }
+        #     for city, item in zip(cities, results)
+        # }
+
+        # print(weather)
+
+        
             
-        #         if response_weather.status_code == 200:
-        #             data = response_weather.json()   
-        #             units = data['current_weather_units']
-        #             values = data['current_weather']
-        #             weather = {key: f'{val} {units[key]}' for key, val in values.items()}
-                    
-        #             weather_data[city] = {
-        #                 'temperature': weather['temperature'],
-        #                 'windspeed': weather['windspeed']
-        #             }
-        #             print(weather_data)
-        #         else:
-        #             print('Bad', response_weather.status_code)
-        #     else:
-        #             print('Bad', response_geo.status_code)
-        # context['weather'] = weather_data
+
+
+    
+        # if response_weather.status_code == 200:
+        #     data = response_weather.json()   
+        #     units = data['current_weather_units']
+        #     values = data['current_weather']
+        #     weather = {key: f'{val} {units[key]}' for key, val in values.items()}
+            
+        #     weather_data[city] = {
+        #         'temperature': weather['temperature'],
+        #         'windspeed': weather['windspeed']
+        #     }
+        #     print(weather_data)
+        # else:
+        #     print('Bad', response_weather.status_code)
+        
 
         return context
     
@@ -116,12 +159,18 @@ class ContactListView(FilterView):
             with transaction.atomic():
                 Contact.objects.bulk_create(contacts)
                 
+            unique_cities = {c.city.strip() for c in contacts if c.city}
+
+            # 2. Обрабатываем города прямо здесь, в основном потоке
+            for city_name in unique_cities:
+                # Проверяем, есть ли город уже в кэше
+                if not GeoCache.objects.filter(city_name=city_name).exists():
+                    # Только если города нет, делаем паузу и запрос
+                    # Это и есть та самая "таска", но выполняемая последовательно
+                    fetch_coords_background(city_name)
 
             return redirect(reverse_lazy('contacts'))
         return render(request, self.template_name, {'upload_form': form})
-
-
-
 
 
 
@@ -130,6 +179,17 @@ class ContactCreateView(CreateView):
     template_name = 'contacts/create_contact.html'
     form_class = ContactForm
     success_url = reverse_lazy('contacts')
+
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        
+        # 2. Запускаем фоновый поток, передаем название города
+        # Пользователь не будет ждать 1.1 секунду
+        city_name = self.object.city # Предполагаем, что в модели Contact есть поле city
+        fetch_coords_background(city_name)
+        
+        return response
 
 
 class ContactUpdateView(UpdateView):
@@ -145,4 +205,32 @@ class ContactDeleteView(DeleteView):
     success_url = reverse_lazy('contacts')
     
     
+class AjaxDeleteView(SingleObjectMixin, View):
+    """
+    Works like DeleteView, but without confirmation screens or a success_url.
+    """
+    model = Contact
 
+
+    def get_object(self, queryset = None):
+        return get_object_or_404(Contact, pk=self.kwargs['pk'])
+
+
+    def post(self, *args, **kwargs):
+        is_ajax = self.request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+        if is_ajax:
+            if self.request.method == 'POST':
+                self.object = self.get_object()
+                self.object.delete()
+                
+                count = Contact.objects.all().count()
+                print(count)
+                # get block of code for empty cart
+                # empty = render_to_string('partials/empty_cart.html')
+
+                # return JsonResponse({'status': 1, 'count': count, 'empty_cart': empty})
+                return JsonResponse({'status': 1, 'count': count,})
+            return JsonResponse({'status': 'Invalid request'}, status=400)
+        else:
+            return HttpResponseBadRequest('Invalid request')

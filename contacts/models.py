@@ -28,3 +28,18 @@ class ContactStatusChoices(models.Model):
     class Meta:
         verbose_name = 'Contact status choice'
         verbose_name_plural = 'Contact status choices'
+
+
+class GeoCache(models.Model):
+    city_name = models.CharField(max_length=255, unique=True, db_index=True)
+    lat = models.FloatField()
+    lon = models.FloatField()
+
+
+    def __str__(self):
+        return self.city_name
+
+
+    class Meta:
+        verbose_name = 'Cache of coordinate'
+        verbose_name_plural = 'Cache of coordinates'

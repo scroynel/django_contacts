@@ -31,3 +31,8 @@ def ordering_link(context, field, label):
     url = '?' + urlencode(params)
 
     return mark_safe(f'<a href="{url}">{label} {arrow}</a>')
+
+
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)
