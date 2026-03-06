@@ -52,6 +52,9 @@ class ContactListView(LoginRequiredMixin, FilterView):
             response_weather = requests.get(weather_api_key, headers=headers)
             data = response_weather.json()
 
+            if isinstance(data, dict):
+                data = [data]
+
             weather = []
 
             for item in data:
