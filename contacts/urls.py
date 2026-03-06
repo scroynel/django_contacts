@@ -1,6 +1,6 @@
 from django.urls import path, include
 from django.contrib.auth.views import LogoutView
-from .views import ContactListView, ContactCreateView, ContactUpdateView, ContactDeleteView, MyLoginView, AjaxDeleteView
+from .views import ContactListView, ContactCreateView, ContactUpdateView, MyLoginView, AjaxDeleteView
 from .api_views import ContactsViewSet
 
 from rest_framework.routers import DefaultRouter

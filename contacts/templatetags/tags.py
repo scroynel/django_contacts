@@ -33,6 +33,7 @@ def ordering_link(context, field, label):
     return mark_safe(f'<a href="{url}">{label} {arrow}</a>')
 
 
+# filter to take data from a dictionary in a template
 @register.filter
 def get_item(dictionary, key):
     return dictionary.get(key)

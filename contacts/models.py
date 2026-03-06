@@ -1,5 +1,8 @@
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class Contact(models.Model):
@@ -10,6 +13,12 @@ class Contact(models.Model):
     city = models.CharField(max_length=50, db_index=True)
     status = models.ForeignKey('ContactStatusChoices', on_delete=models.PROTECT, related_name='contacts')
     time_created = models.DateTimeField(auto_now_add=True, db_index=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+
+
+    def __str__(self):
+        return f'{self.name} - {self.surname} - {self.status}'
+
 
     class Meta:
         verbose_name = 'Contact'

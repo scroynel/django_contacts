@@ -162,6 +162,7 @@ CACHES = {
 
 TAILWIND_APP_NAME = "theme"
 
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'contacts'
 LOGOUT_REDIRECT_URL = 'contacts'
 
@@ -169,6 +170,7 @@ TIME_ZONE = 'Europe/Warsaw'
 
 INTERNAL_IPS = ['localhost', '127.0.0.1']
 
+# For debug toolbar in docker
 DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': lambda request: DEBUG,
 }

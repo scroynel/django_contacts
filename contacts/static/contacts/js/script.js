@@ -15,6 +15,15 @@ function getCookie(name) {
 }
 
 
+
+function displayFileName(input) {
+  const fileName = input.files[0] ? input.files[0].name : "No file..."; 
+  document.getElementById('file-chosen').textContent = fileName;
+  // Optional: Add a green glow when a file is ready
+  document.getElementById('file-chosen').classList.add('text-green-600', 'not-italic', 'font-medium');
+}
+
+
 $('#contacts').on('click', '.delete-link', function(e) {
   e.preventDefault();
   $.ajax({

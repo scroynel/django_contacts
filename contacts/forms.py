@@ -4,10 +4,9 @@ from .models import Contact
 class ContactForm(forms.ModelForm):
     class Meta:
         model = Contact
-        fields = '__all__'
-        widgets = {
-            
-        }
+        fields = ['name', 'surname', 'phone', 'email', 'city', 'status']
+
+        
 
 
 class ContactCSVForm(forms.Form):

@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load tags %}
 
 {% block title %}Contacts{% endblock %}
 
@@ -50,6 +49,7 @@
 </div>
 <div class="mb-7">
   <div>
+    <!-- Adding file -->
       <form method="post" enctype="multipart/form-data" class="flex items-center gap-3 p-2 bg-gray-50 rounded-xl border border-gray-200 w-fit">
         {% csrf_token %}
         <label class="flex items-center justify-center w-10 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer transition-all shrink-0">
@@ -62,67 +62,7 @@
     </div>
 </div>
 
-<div id="contacts" class="mx-auto space-y-6">
-  <!-- Header -->
-  <div class="flex bg-gray-100 font-semibold p-4 rounded-2xl">
-    <div class="flex-1 min-w-0">{% ordering_link 'name' 'Name' %}</div>
-    <div class="flex-1 min-w-0 truncate">{% ordering_link 'surname' 'Surname' %}</div>
-    <div class="flex-1 min-w-0">Email</div>
-    <div class="flex-1 min-w-0">City</div>
-    <div class="flex-1 min-w-0">Status</div>
-    <div class="flex-1 min-w-0">{% ordering_link 'time_created' 'Date' %}</div>
-    <div class="w-24">Actions</div>
-  </div>
+{% include 'contacts/partials/contacts_list.html' %}
 
-  {% for contact in contacts %}
-  <div class="contact-item bg-gray-200 flex p-4 items-center rounded-2xl shadow-2xl transform transition-all duration-500 hover:-translate-y-2 ">
-    <div class="flex-1 min-w-0 truncate">{{ contact.name }}</div>
-    <div class="flex-1 min-w-0 truncate">{{ contact.surname }}</div>
-    <div class="flex-1 min-w-0 truncate">{{ contact.email }}</div>
-    <div class="flex-1 min-w-0 truncate">{{ contact.city }}
-      {% with info=weather_cities|get_item:contact.city %}
-            {% if info %}
-                <div>
-                    🌡️: {{ info.temp }}<br>
-                    💨: {{ info.wind }}
-                </div>
-            {% else %}
-                <p>Погода недоступна</p>
-            {% endif %}
-        {% endwith %}
-    </div>
-    <div class="flex-1 min-w-0 truncate
-      {% if contact.status.code == 'new' %}text-green-500
-      {% elif contact.status.code == 'in_progress' %}text-yellow-500
-      {% elif contact.status.code == 'lost' %}text-red-500
-      {% elif contact.status.code == 'outdated' %}text-gray-500{% endif %}">
-      {{ contact.status.name }}
-    </div>
-    <div class="flex-1 min-w-0 truncate">{{ contact.time_created|date:'d.m.Y' }}</div>
-    <div class="w-24 flex gap-2">
-      <a href="{% url 'update_contact' contact.id %}" class="text-blue-500 hover:text-blue-700 transform hover:scale-110 transition">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 11l6 6L4 20l-1-7 6-6z"/>
-        </svg>
-      </a>
-      <a href="{% url 'delete_contact' contact.id %}" class="delete-link text-red-500 hover:text-red-700 transform hover:scale-110 transition">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </a>
-    </div>
-  </div>
-  {% endfor %}
-
-</div>
-
-<script>
-  function displayFileName(input) {
-    const fileName = input.files[0] ? input.files[0].name : "No file..."; 
-    document.getElementById('file-chosen').textContent = fileName;
-    // Optional: Add a green glow when a file is ready
-    document.getElementById('file-chosen').classList.add('text-green-600', 'not-italic', 'font-medium');
-  }
-</script>
 {% endblock %}
 

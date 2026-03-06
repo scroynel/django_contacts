@@ -5,6 +5,7 @@ from .models import Contact
 class ContactFilter(django_filters.FilterSet):
     search = django_filters.CharFilter(method='filter_by_multiple_fields', label='Search')
 
+    # Ordering
     ordering = django_filters.OrderingFilter(
         # tuple: (model_field, parameter_name)
         choices = (
@@ -22,6 +23,7 @@ class ContactFilter(django_filters.FilterSet):
         fields = []
 
     
+    # Search filter
     def filter_by_multiple_fields(self, queryset, name, value):
         """
         Filters queryset by multiple fields using OR logic.
