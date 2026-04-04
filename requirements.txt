@@ -5,7 +5,7 @@ billiard==4.2.4
 binaryornot==0.4.4
 certifi==2026.2.25
 chardet==6.0.0.post1
-charset-normalizer==3.4.4
+charset-normalizer==3.4.6
 click==8.3.1
 click-didyoumean==0.3.1
 click-plugins==1.1.1.2
@@ -20,6 +20,7 @@ django-phonenumber-field==8.4.0
 django-tailwind==4.4.2
 djangorestframework==3.16.1
 idna==3.11
+iniconfig==2.3.0
 Jinja2==3.1.6
 kombu==5.6.2
 markdown-it-py==4.0.0
@@ -27,12 +28,15 @@ MarkupSafe==3.0.3
 mdurl==0.1.2
 packaging==26.0
 phonenumbers==9.0.25
+pluggy==1.6.0
 progressbar2==4.5.0
 prompt_toolkit==3.0.52
 psutil==7.2.2
 psycopg2==2.9.11
 Pygments==2.19.2
 pytailwindcss==0.3.0
+pytest==9.0.2
+pytest-django==4.12.0
 python-dateutil==2.9.0.post0
 python-slugify==8.0.4
 python-utils==3.9.1
