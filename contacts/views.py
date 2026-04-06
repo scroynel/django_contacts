@@ -13,7 +13,7 @@ from .filters import ContactFilter
 import io
 import csv
 import requests
-from .utils import fetch_coords_background
+from .services import fetch_coords_background, fetch_weather_by_coords
 
 
 class MyLoginView(LoginView):
@@ -39,33 +39,17 @@ class ContactListView(LoginRequiredMixin, FilterView):
             # Get cities of contacts with coords
             coords = GeoCache.objects.values_list('city_name', 'lat', 'lon')
 
-            cities = [c[0] for c in coords]
-            lats = [c[1] for c in coords]
-            lons = [c[2] for c in coords]
+            cities, lats, lons = zip(*coords) if coords else ([],[],[])
 
             lats_string = ','.join(map(str, lats))
             lons_string = ','.join(map(str, lons))
-            
-            headers = {'User-Agent': 'MyGeocodingApp/1.0'}
-                
-            weather_api_key = f'https://api.open-meteo.com/v1/forecast?latitude={lats_string}&longitude={lons_string}&current_weather=true'
-            response_weather = requests.get(weather_api_key, headers=headers)
-            data = response_weather.json()
 
-            if isinstance(data, dict):
-                data = [data]
-
-            weather = []
-
-            for item in data:
-                units = item['current_weather_units']
-                values = item['current_weather']
-                weather.append({key: f'{val} {units[key]}' for key, val in values.items()})
+            weather = fetch_weather_by_coords(lats_string, lons_string)
             
             weather_cities = {
                     city:{
-                    'temp': item['temperature'],
-                    'wind': item['windspeed']
+                    'temp': item['temp'],
+                    'wind': item['wind']
                 }
                 for city, item in zip(cities, weather)
             }
@@ -134,7 +118,6 @@ class ContactListView(LoginRequiredMixin, FilterView):
                 if not GeoCache.objects.filter(city_name=city_name).exists():
                     fetch_coords_background(city_name)
 
-            
         return redirect(reverse_lazy('contacts'))
 
 
