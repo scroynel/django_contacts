@@ -1,6 +1,8 @@
+from django.urls import reverse
+from django.contrib.auth import get_user_model
+
 import pytest
 from contacts.models import Contact, ContactStatusChoices, GeoCache
-from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
@@ -34,3 +36,36 @@ def test_contact(db, test_user, test_status):
 def test_geocache(db):
     geocache = GeoCache.objects.create(city_name='Warsaw', lat=52.22, lon=21.01)
     return geocache
+
+
+@pytest.fixture
+def auth_client(client, test_user):
+    client.force_login(test_user)
+    return client
+
+
+@pytest.fixture
+def delete_contact_url(test_contact):
+    return reverse('delete_contact', args=[test_contact.id])
+
+
+@pytest.fixture
+def ajax_headers():
+    return {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
+
+
+@pytest.fixture
+def update_contact_url(test_contact):
+    return reverse('update_contact', args=[test_contact.id])
+
+
+@pytest.fixture
+def contact_data(test_status):
+    return {
+        'name': 'Piter',
+        'surname': 'Walker',
+        'phone': '+48798498754',
+        'email': 'piterpark@gmail.com',
+        'city': 'Gdansk',
+        'status': test_status.id
+    }

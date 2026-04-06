@@ -57,39 +57,34 @@ def test_with_login(client, test_contact, test_user, url_name, args):
 
 # Write the same test and check the data assert test_contact.city == 'Gdansk' ...
 @pytest.mark.django_db
-def test_update_contact_status(client, test_user, test_contact, test_status):
-    client.force_login(test_user)
-    url_path = reverse('update_contact', args=[test_contact.id])
-    
-    data = {
-        'name': 'Piter',
-        'surname': 'Walker',
-        'phone': '+48798498754',
-        'email': 'piterpark@gmail.com',
-        'city': 'Gdansk',
-        'status': test_status.id
-    }
-
-    response = client.post(url_path, data)
+def test_update_contact_status(auth_client, update_contact_url, contact_data):
+    response = auth_client.post(update_contact_url, data=contact_data)
 
     assert response.status_code == 302
     assert response.url == reverse('contacts')
 
 
 @pytest.mark.django_db
-def test_delete_contact_status_ajax(client, test_user, test_contact):
-    client.force_login(test_user)
-    url_path = reverse('delete_contact', args=[test_contact.id])
-    response = client.post(url_path, HTTP_X_REQUESTED_WITH='XMLHttpRequest') # For AJAX request
+def test_update_contact_check_data(auth_client, update_contact_url, contact_data, test_contact):
+    data = contact_data
+    auth_client.post(update_contact_url, data=contact_data)
+    test_contact.refresh_from_db()
+
+    assert test_contact.name == 'Piter'
+    assert test_contact.surname == 'Walker'
+    assert test_contact.city == 'Gdansk'
+    
+
+@pytest.mark.django_db
+def test_delete_contact_status_ajax(auth_client, delete_contact_url, ajax_headers):
+    response = auth_client.post(delete_contact_url, **ajax_headers) # For AJAX request
 
     assert response.status_code == 200
 
 
 @pytest.mark.django_db
-def test_delete_contact_exists(client, test_user, test_contact):
-    client.force_login(test_user)
-    url_path = reverse('delete_contact', args=[test_contact.id])
-    response = client.post(url_path, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+def test_delete_contact_exists(auth_client, delete_contact_url, ajax_headers, test_contact):
+    auth_client.post(delete_contact_url, **ajax_headers)
 
     assert not Contact.objects.filter(id=test_contact.id).exists()
 
