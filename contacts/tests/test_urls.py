@@ -1,4 +1,5 @@
 import pytest
+import json
 from django.urls import reverse, resolve
 from contacts.views import ContactListView
 from django.contrib.auth.models import User
@@ -52,6 +53,7 @@ def test_with_login(client, test_contact, test_user, url_name, args):
 
     url_path = reverse(url_name, args=args)
     response = client.get(url_path)
+
     assert response.status_code == 200
 
 
@@ -66,7 +68,6 @@ def test_update_contact_status(auth_client, update_contact_url, contact_data):
 
 @pytest.mark.django_db
 def test_update_contact_check_data(auth_client, update_contact_url, contact_data, test_contact):
-    data = contact_data
     auth_client.post(update_contact_url, data=contact_data)
     test_contact.refresh_from_db()
 
@@ -89,17 +90,61 @@ def test_delete_contact_exists(auth_client, delete_contact_url, ajax_headers, te
     assert not Contact.objects.filter(id=test_contact.id).exists()
 
 
-
-
+@pytest.mark.django_db
+@pytest.mark.parametrize('url_name', [
+    'login',
+    'api_contacts-list'
+])
+def test_public_pages(client, url_name):
+    url_path = reverse(url_name)
+    response = client.get(url_path)
     
+    assert response.status_code == 200
 
-# @pytest.mark.django_db
-# @pytest.mark.parametrize('url_name', [
-#     'login',
-#     'api_contacts-list'
-# ])
-# def test_public_pages(client, url_name):
-#     url_path = reverse(url_name)
-#     response = client.get(url_path)
-    
-#     assert response.status_code == 200
+
+@pytest.mark.django_db
+def test_api_contact_create(auth_client, test_user, test_status):
+    response = auth_client.post('/api/contacts/', data=json.dumps(
+        {
+            'name': 'John',
+            'surname': 'Olsson',
+            'phone': '+48458498766',
+            'email': 'johnolss@gmail.com',
+            'city': 'Warsaw',
+            'status': test_status.id,
+            'owner': test_user.id
+        }), 
+        content_type='application/json'
+    )
+
+    assert response.status_code == 201
+
+
+@pytest.mark.django_db
+def test_api_contact_update(auth_client, test_contact, test_status, test_user):
+    response = auth_client.put(f'/api/contacts/{test_contact.id}/', data=json.dumps(
+        {
+            'name': 'John',
+            'surname': 'Smith',
+            'phone': '+48458498766',
+            'email': 'johnolss@gmail.com',
+            'city': 'Warsaw',
+            'status': test_status.id,
+            'owner': test_user.id
+        }),
+        content_type='application/json'
+    )
+
+    test_contact.refresh_from_db()
+
+    assert response.status_code == 200
+    assert test_contact.email == 'johnolss@gmail.com'
+    assert test_contact.surname == 'Smith'
+
+
+@pytest.mark.django_db
+def test_api_contact_delete(auth_client, test_contact):
+    response = auth_client.delete(f'/api/contacts/{test_contact.id}/')
+
+    assert response.status_code == 204
+    assert not Contact.objects.filter(id=test_contact.id).exists()
