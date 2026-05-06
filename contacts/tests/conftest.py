@@ -13,6 +13,12 @@ def test_user(db):
 
 
 @pytest.fixture
+def test_user2(db):
+    user = User.objects.create_user(username="testuser2", password='testpassword2')
+    return user
+
+
+@pytest.fixture
 def test_status(db):
     status = ContactStatusChoices.objects.create(name='Nowy', code='new')
     return status
@@ -28,6 +34,20 @@ def test_contact(db, test_user, test_status):
         city = 'Warsaw',
         status=test_status,
         owner=test_user
+    )
+    return contact
+
+
+@pytest.fixture
+def test_contact2(db, test_user2, test_status):
+    contact = Contact.objects.create(
+        name='Joanna',
+        surname='Smith',
+        phone = '+48798452353',
+        email = 'joanna@gmail.com',
+        city = 'Warsaw',
+        status=test_status,
+        owner=test_user2
     )
     return contact
 
