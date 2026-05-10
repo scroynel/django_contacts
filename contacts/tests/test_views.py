@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -31,7 +32,7 @@ def test_login_success(client, test_user):
 
 # Test ContactListView
 @pytest.mark.django_db
-def test_contact_list_view_if_not_logged_id(client):
+def test_contact_list_view_if_not_logged_in(client):
     url = reverse('contacts')
     response = client.get(url)
 
@@ -74,6 +75,57 @@ def test_contact_list_view_csv_upload_skips_dublicates(auth_client, test_user, t
     file = SimpleUploadedFile('contacts.csv', csv_data.encode('utf-8'),  content_type='text/csv')
     url = reverse('contacts')
 
-    responser = auth_client.post(url, {'file': file})
+    response = auth_client.post(url, {'file': file})
 
     assert Contact.objects.filter(owner=test_user).count() == 1
+
+
+@patch("contacts.views.fetch_coords_background")
+@patch("contacts.views.fetch_weather_by_coords", return_value=[])
+def test_view_with_weather_mock(mock_weather, mock_bg, auth_client, test_user, test_status, test_contact):
+    url = reverse('contacts')
+    response = auth_client.get(url)
+
+    assert response.status_code == 200
+    mock_weather.assert_called()
+
+
+@pytest.mark.django_db
+def test_contact_create_view_if_not_logged_in(client):
+    url = reverse('create_contact')
+    response = client.get(url)
+    
+    assert response.status_code == 302
+    assert '/login/' in response.url
+
+
+@pytest.mark.django_db
+def test_contact_create_view_create_contact(auth_client, contact_data, test_user):
+    url = reverse('create_contact')
+
+    with patch("contacts.views.fetch_coords_background") as mock_task:
+        response = auth_client.post(url, contact_data)
+
+    assert response.status_code == 302
+    assert response.url == reverse('contacts')
+
+    contact = Contact.objects.get(email='piterpark@gmail.com')
+
+    assert contact.name == 'Piter'
+    assert contact.city == 'Gdansk'
+    assert contact.owner == test_user
+
+    mock_task.assert_called_once_with('Gdansk')
+
+
+@pytest.mark.django_db
+def test_contact_create_view_invalid_form(auth_client, contact_data):
+    url = reverse('create_contact')
+    data = contact_data
+    data['name'] = ''
+    
+    response = auth_client.post(url, contact_data)
+
+    assert response.status_code == 200
+    assert Contact.objects.count() == 0
+
