@@ -129,3 +129,63 @@ def test_contact_create_view_invalid_form(auth_client, contact_data):
     assert response.status_code == 200
     assert Contact.objects.count() == 0
 
+
+@pytest.mark.django_db
+def test_contact_update_view_update_own_contact(auth_client, test_contact):
+    url = reverse('update_contact', args=[test_contact.id])
+    contact = test_contact
+    response = auth_client.post(url, {
+        'name': 'Tomas',
+        'surname': test_contact.surname,
+        'phone': test_contact.phone,
+        'email': test_contact.email,
+        'city': test_contact.city,
+        'status': test_contact.status.id
+    })
+
+    contact.refresh_from_db()
+
+    assert response.status_code == 302
+    assert contact.name == 'Tomas'
+
+
+@pytest.mark.django_db
+def test_contact_update_view_update_someone_contact(auth_client, test_contact2):
+    url = reverse('update_contact', args=[test_contact2.id])
+    contact = test_contact2
+    response = auth_client.get(url)
+
+    assert response.status_code == 404
+
+
+
+@patch("contacts.views.fetch_coords_background")
+def test_contact_update_view_city_changed(mock_fetch_coords, auth_client, test_contact):
+    url = reverse('update_contact', args=[test_contact.id])
+    response = auth_client.post(url, {
+        'name': test_contact.name,
+        'surname': test_contact.surname,
+        'phone': test_contact.phone,
+        'email': test_contact.email,
+        'city': 'Gdansk',
+        'status': test_contact.status.id
+    })
+
+    print(test_contact.city)
+
+    mock_fetch_coords.assert_called_once_with('Gdansk')
+
+
+
+@pytest.mark.django_db
+def test_contact_update_view_city_not_changed():
+    pass
+@pytest.mark.django_db
+def test_ajax_request_delete_contact():
+    pass
+@pytest.mark.django_db
+def test_non_ajax_request():
+    pass
+@pytest.mark.django_db
+def test_ajax_delete_unauthenticated_user_redirect():
+    pass
