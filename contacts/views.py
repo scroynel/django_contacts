@@ -166,7 +166,7 @@ class AjaxDeleteView(LoginRequiredMixin, SingleObjectMixin, View):
 
 
     def get_object(self, queryset = None):
-        return get_object_or_404(Contact, pk=self.kwargs['pk'])
+        return get_object_or_404(Contact, pk=self.kwargs['pk'], owner=self.request.user)
 
 
     def post(self, *args, **kwargs):

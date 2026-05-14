@@ -171,21 +171,52 @@ def test_contact_update_view_city_changed(mock_fetch_coords, auth_client, test_c
         'status': test_contact.status.id
     })
 
-    print(test_contact.city)
-
     mock_fetch_coords.assert_called_once_with('Gdansk')
 
 
 
+@patch("contacts.views.fetch_coords_background")
+def test_contact_update_view_city_not_changed(mock_fetch_coords, auth_client, test_contact):
+    url = reverse('update_contact', args=[test_contact.id])
+    response = auth_client.post(url, {
+        'name': 'Tom',
+        'surname': test_contact.surname,
+        'phone': test_contact.phone,
+        'email': test_contact.email,
+        'city': 'Warsaw',
+        'status': test_contact.status.id
+    })
+
+    mock_fetch_coords.assert_not_called()
+
 @pytest.mark.django_db
-def test_contact_update_view_city_not_changed():
-    pass
+def test_ajax_request_delete_contact(auth_client, test_contact):
+    url = reverse('delete_contact', args=[test_contact.id])
+    response = auth_client.post(url, HTTP_X_REQUESTED_WITH= 'XMLHttpRequest')
+
+    assert response.status_code == 200
+    assert response.json() == {'status': 1}
+    assert Contact.objects.filter(id=test_contact.id).count() == 0
+
+
 @pytest.mark.django_db
-def test_ajax_request_delete_contact():
-    pass
+def test_non_ajax_request(auth_client, test_contact):
+    url = reverse('delete_contact', args=[test_contact.id])
+    response = auth_client.post(url)
+
+    assert response.status_code == 400
+
 @pytest.mark.django_db
-def test_non_ajax_request():
-    pass
+def test_ajax_delete_unauthenticated_user_redirect(client, test_contact):
+    url = reverse('delete_contact', args=[test_contact.id])
+    response = client.post(url, HTTP_X_REQUESTED_WITH= 'XMLHttpRequest')
+
+    assert response.status_code == 302
+
+
 @pytest.mark.django_db
-def test_ajax_delete_unauthenticated_user_redirect():
-    pass
+def test_ajax_delete_other_user_contact(auth_client, test_contact2):
+    url = reverse('delete_contact', args=[test_contact2.id])
+    response = auth_client.post(url, HTTP_X_REQUESTED_WITH= 'XMLHttpRequest')
+
+    assert response.status_code == 404
